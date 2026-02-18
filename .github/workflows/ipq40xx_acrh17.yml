@@ -1,4 +1,4 @@
-name: Build ImmortalWrt-25.12 for armsr_armv8
+name: Build ImmortalWrt-25.12 for ipq40xx_acrh17
 
 on:
   workflow_dispatch:
@@ -106,17 +106,17 @@ jobs:
 
     - name: Update & Install feeds
       run: |
-        chmod +x armsr/armv8/diy/diy.sh
+        chmod +x ipq40xx/acrh17/diy.sh
         cd openwrt
         ./scripts/feeds update -a
-        $GITHUB_WORKSPACE/armsr/armv8/diy/diy.sh
+        $GITHUB_WORKSPACE/ipq40xx/acrh17/diy.sh
         ./scripts/feeds update -a
         ./scripts/feeds install -a
 
-    - name: Load N1 custom config
+    - name: Load custom config
       run: |
         rm -rf openwrt/files openwrt/.config
-        mv armsr/armv8/N1/files armsr/armv8/N1/.config openwrt/
+        mv ipq40xx/acrh17/files ipq40xx/acrh17/.config openwrt/
 
     - name: SSH connect to Actions
       uses: P3TERX/ssh2actions@main
@@ -129,35 +129,30 @@ jobs:
         make download -j$(( $(nproc) * 2 ))
         find dl -size -1k -exec rm -f {} \;
 
-    - name: Compile N1 firmware
+    - name: Compile firmware
       run: |
         chmod -R 755 openwrt
         cd openwrt
         echo -e "$(nproc) thread compile"
         make -j$(( $(nproc) + 1 )) || make -j1 V=s
 
-    - name: Package N1 firmware
-      uses: ophub/flippy-openwrt-actions@main
-      env:
-        OPENWRT_ARMVIRT: openwrt/bin/targets/armsr/armv8/*rootfs.tar.gz
-        KERNEL_REPO_URL: ophub/kernel
-        KERNEL_VERSION_NAME: 6.1.y_6.18.y
-        PACKAGE_SOC: diy
-        SCRIPT_DIY_PATH: armsr/armv8/N1/mk_s905d_n1.sh
-        GZIP_IMGS: .xz
-        WHOAMI: ${{ github.actor }}
-        SW_FLOWOFFLOAD: 0
-        SFE_FLOW: 0
+    - name: Organize files
+      id: organize
+      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/ipq40xx/*/*
+        rm -rf packages
+        find . -mindepth 1 ! \( -name '*factory*' -o -name '*sysupgrade*' \) -exec rm -rf {} +
 
     - name: Upload firmware to release
       uses: softprops/action-gh-release@master
       with:
-        tag_name: OpenWrt_N1_${{ env.FILE_DATE }}
-        files: ${{ env.PACKAGED_OUTPUTPATH }}/*
+        tag_name: OpenWrt_ACRH17_${{ env.FILE_DATE }}
+        files: openwrt/bin/targets/ipq40xx/*/*
         body: |
           首次使用建议全新刷写
           * 基本信息
-          IP: 192.168.2.2
+          IP: 192.168.2.1
           账户: root
           密码: password
 
