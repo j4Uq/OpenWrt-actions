@@ -34,3 +34,11 @@ config interface 'wan'
 	option device 'eth0.2'
 	option username '0000000'
 	option password '123456'
+
+# 旁路由模式启用，获得ipv6
+#config interface 'lan6'
+#	option device '@lan'
+#	option proto 'dhcpv6'
+#	option reqaddress 'try'
+#	option reqprefix 'auto'
+#	option norelease '1'
