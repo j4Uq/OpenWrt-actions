@@ -2,7 +2,7 @@ name: Check Upstream
 
 on:
   schedule:
-    - cron: "0 20 * * *"   # 每天 UTC 20:00
+    - cron: "0 21 * * *"   # 每天 UTC 20:00
   workflow_dispatch:        # 允许手动触发检查
 
 env:
