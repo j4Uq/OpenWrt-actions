@@ -2,7 +2,7 @@ name: Check Upstream
 
 on:
   schedule:
-    - cron: "0 20 * * 4"   # 每周四 UTC 20:00
+    - cron: "0 20 * * *"   # 每天 UTC 20:00
   workflow_dispatch:        # 允许手动触发检查
 
 env:
@@ -40,11 +40,11 @@ jobs:
           commit_ts=$(date -d "$commit_date" +%s)
           now_ts=$(date -u +%s)
           days_diff=$(( (now_ts - commit_ts) / 86400 ))
-          if (( days_diff < 7 )); then
-            echo "上游最近更新在 ${days_diff} 天前，触发构建。"
+          if (( days_diff >= 1 && days_diff < 2 )); then
+            echo "上游最近更新在 ${days_diff} 天，触发构建。"
             echo "should_build=true" >> $GITHUB_OUTPUT
           else
-            echo "上游超过7天未更新，跳过构建。"
+            echo "上游最近更新在 ${days_diff} 天，跳过构建。"
             echo "should_build=false" >> $GITHUB_OUTPUT
           fi
 
