@@ -1,0 +1,9 @@
+#!/bin/sh
+# 防火墙启用fullcone6，使用软件路由分载
+#uci set firewall.@defaults[0].fullcone6='1'
+#uci del firewall.@defaults[0].flow_offloading_hw
+#uci commit firewall
+# 启用ntp服务端
+uci set system.@timeserver[0].enable_server='1'
+uci commit system
+exit 0
